@@ -18,7 +18,7 @@ export default function IndexPage() {
     <div className="container relative">
       <PageHeader>
         <Announcement />
-        <PageHeaderHeading>Build your code library</PageHeaderHeading>
+        <PageHeaderHeading>Index your code library</PageHeaderHeading>
         <PageHeaderDescription>
           Beautifully designed components that you can copy and paste into your
           apps. Made with Nextjs. Open source.
