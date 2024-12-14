@@ -1,3 +1,4 @@
+// src/types/nav.ts
 import { Icons } from "@/components/icons";
 
 export interface NavItem {
@@ -13,6 +14,6 @@ export interface NavItemWithChildren extends NavItem {
   items: NavItemWithChildren[];
 }
 
-export type MainNavItem = NavItem; // Use a type alias
+export type MainNavItem = NavItem; // This is the key change: type alias
 
 export interface SidebarNavItem extends NavItemWithChildren {}
