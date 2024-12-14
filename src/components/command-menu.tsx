@@ -24,6 +24,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
+import { NavItem, NavItemWithChildren } from "@/types/nav" // Add this import
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter()
@@ -78,8 +79,8 @@ export function CommandMenu({ ...props }: DialogProps) {
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Links">
             {docsConfig.mainNav
-              .filter((navitem) => !navitem.external)
-              .map((navItem) => (
+              .filter((navitem: NavItem) => !navitem.external)
+              .map((navItem: NavItem) => (
                 <CommandItem
                   key={navItem.href}
                   value={navItem.title}
@@ -92,9 +93,9 @@ export function CommandMenu({ ...props }: DialogProps) {
                 </CommandItem>
               ))}
           </CommandGroup>
-          {docsConfig.sidebarNav.map((group) => (
+          {docsConfig.sidebarNav.map((group: NavItemWithChildren) => (
             <CommandGroup key={group.title} heading={group.title}>
-              {group.items.map((navItem) => (
+              {group.items.map((navItem: NavItemWithChildren) => (
                 <CommandItem
                   key={navItem.href}
                   value={navItem.title}
