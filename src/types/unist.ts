@@ -1,4 +1,5 @@
-import { Node } from "unist-builder"
+import type { Node } from 'unist';
+
 
 export interface UnistNode extends Node {
   type: string
