@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link, { LinkProps } from "next/link"
 import { useRouter } from "next/navigation"
-import { MenuIcon } from "lucide-react"
+// import { MenuIcon } from "lucide-react"
 
 import { docsConfig } from "@/config/docs"
 import { siteConfig } from "@/config/site"

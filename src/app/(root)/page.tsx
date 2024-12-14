@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
 import { Announcement } from "@/components/announcement"
-import { ExamplesNav } from "@/components/examples-nav"
+// import { ExamplesNav } from "@/components/examples-nav"
 import {
   PageActions,
   PageHeader,
