@@ -13,11 +13,6 @@ export interface NavItemWithChildren extends NavItem {
   items: NavItemWithChildren[];
 }
 
-// Remove MainNavItem as it's identical to NavItem
-// export interface MainNavItem extends NavItem {}
+export type MainNavItem = NavItem; // Use a type alias
 
-// Use a type alias if you just want a different name for NavItem
-export type MainNavItem = NavItem;
-
-// SidebarNavItem already adds a new property, so it's fine
 export interface SidebarNavItem extends NavItemWithChildren {}
