@@ -14,6 +14,11 @@ export interface NavItemWithChildren extends NavItem {
   items: NavItemWithChildren[];
 }
 
-export type MainNavItem = NavItem; // This is the key change: type alias
+export type MainNavItem = NavItem;
 
-export interface SidebarNavItem extends NavItemWithChildren {}
+// If SidebarNavItem is ALSO empty after extending, use a type alias here too
+// Check if you are adding any properties to SidebarNavItem in other files.
+// If not, change this to:
+// export type SidebarNavItem = NavItemWithChildren;
+
+export interface SidebarNavItem extends NavItemWithChildren {} // Only if it has unique props
