@@ -31,6 +31,7 @@ import {
   StarOff,
   Trash,
   Trash2,
+  type LucideIcon,
 } from "lucide-react"
 
 import {
