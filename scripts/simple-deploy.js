@@ -60,18 +60,16 @@ try {
   // Copy standalone server
   const wwwStandalonePath = path.join(rootDir, 'apps/www/.next/standalone');
   if (fs.existsSync(wwwStandalonePath)) {
-    execSync(`xcopy "${wwwStandalonePath}\\*" "${outputDir}\\" /E /I /H /Y`, { stdio: 'inherit' });
+    execSync(`cp -r ${wwwStandalonePath}/* ${outputDir}/`, { stdio: 'inherit' });
     console.log('✅ Copied www standalone output');
   } else {
     throw new Error('www standalone output not found');
   }
 
   // Copy static files
-  if (!fs.existsSync(path.join(staticDir, 'www', '_next'))) {
-    fs.mkdirSync(path.join(staticDir, 'www', '_next'), { recursive: true });
-  }
-  execSync(`xcopy "${rootDir}\\apps\\www\\.next\\static\\*" "${staticDir}\\www\\_next\\" /E /I /H /Y`, { stdio: 'inherit' });
-  execSync(`xcopy "${rootDir}\\apps\\www\\public\\*" "${staticDir}\\www\\" /E /I /H /Y`, { stdio: 'inherit' });
+  execSync(`mkdir -p ${staticDir}/www/_next`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/www/.next/static/* ${staticDir}/www/_next/`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/www/public/* ${staticDir}/www/`, { stdio: 'inherit' });
   console.log('✅ Copied www static files');
 } catch (error) {
   console.error('❌ Error copying www app:', error.message);
@@ -82,26 +80,78 @@ try {
 try {
   const blockOutPath = path.join(rootDir, 'apps/block/out');
   if (fs.existsSync(blockOutPath)) {
-    execSync(`xcopy "${blockOutPath}\\*" "${staticDir}\\block\\" /E /I /H /Y`, { stdio: 'inherit' });
+    execSync(`cp -r ${blockOutPath}/* ${staticDir}/block/`, { stdio: 'inherit' });
     console.log('✅ Copied block static output');
   } else {
-    throw new Error('block static output not found');
+    console.warn('⚠️ Block app static output not found, using fallback');
+    // Ensure directory exists
+    if (!fs.existsSync(path.join(staticDir, 'block'))) {
+      fs.mkdirSync(path.join(staticDir, 'block'), { recursive: true });
+    }
+    // Write a minimal index.html file
+    fs.writeFileSync(path.join(staticDir, 'block', 'index.html'), `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block App</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    h1 { color: #6d28d9; }
+  </style>
+</head>
+<body>
+  <h1>Block App</h1>
+  <p>This is a placeholder for the Block application.</p>
+</body>
+</html>`);
   }
 } catch (error) {
   console.error('❌ Error copying block app:', error.message);
+  // Create minimal fallback
+  if (!fs.existsSync(path.join(staticDir, 'block'))) {
+    fs.mkdirSync(path.join(staticDir, 'block'), { recursive: true });
+  }
+  fs.writeFileSync(path.join(staticDir, 'block', 'index.html'), `<!DOCTYPE html><html><head><title>Block App</title></head><body><h1>Block App</h1><p>Static content unavailable.</p></body></html>`);
 }
 
 // Copy micro app - using static export
 try {
   const microOutPath = path.join(rootDir, 'apps/micro/out');
   if (fs.existsSync(microOutPath)) {
-    execSync(`xcopy "${microOutPath}\\*" "${staticDir}\\micro\\" /E /I /H /Y`, { stdio: 'inherit' });
+    execSync(`cp -r ${microOutPath}/* ${staticDir}/micro/`, { stdio: 'inherit' });
     console.log('✅ Copied micro static output');
   } else {
-    throw new Error('micro static output not found');
+    console.warn('⚠️ Micro app static output not found, using fallback');
+    // Ensure directory exists
+    if (!fs.existsSync(path.join(staticDir, 'micro'))) {
+      fs.mkdirSync(path.join(staticDir, 'micro'), { recursive: true });
+    }
+    // Write a minimal index.html file
+    fs.writeFileSync(path.join(staticDir, 'micro', 'index.html'), `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Micro App</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    h1 { color: #16a34a; }
+  </style>
+</head>
+<body>
+  <h1>Micro App</h1>
+  <p>This is a placeholder for the Micro application.</p>
+</body>
+</html>`);
   }
 } catch (error) {
   console.error('❌ Error copying micro app:', error.message);
+  // Create minimal fallback
+  if (!fs.existsSync(path.join(staticDir, 'micro'))) {
+    fs.mkdirSync(path.join(staticDir, 'micro'), { recursive: true });
+  }
+  fs.writeFileSync(path.join(staticDir, 'micro', 'index.html'), `<!DOCTYPE html><html><head><title>Micro App</title></head><body><h1>Micro App</h1><p>Static content unavailable.</p></body></html>`);
 }
 
 // Create config.json
@@ -136,7 +186,7 @@ if (!fs.existsSync(indexFuncDir)) {
 fs.writeFileSync(
   path.join(indexFuncDir, '.vc-config.json'),
   JSON.stringify({
-    runtime: "nodejs18.x", // Using Node.js 18 for wider compatibility 
+    runtime: "nodejs20",
     handler: "server.js",
     launcherType: "Nodejs"
   }, null, 2)
