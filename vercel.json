@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm deploy",
+  "buildCommand": "node scripts/simple-deploy.js",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "framework": "nextjs",
+  "framework": null,
   "outputDirectory": ".vercel/output"
 } 
