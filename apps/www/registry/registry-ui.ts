@@ -1,4 +1,4 @@
-import { type Registry } from "shadcn/registry"
+import { type Registry, type RegistryItem } from "shadcn/registry"
 
 export const ui: Registry["items"] = [
   {
@@ -33,7 +33,7 @@ export const ui: Registry["items"] = [
         },
       },
     },
-  },
+  } as RegistryItem,
   {
     name: "alert",
     type: "registry:ui",
@@ -482,7 +482,7 @@ export const ui: Registry["items"] = [
         "sidebar-ring": "217.2 91.2% 59.8%",
       },
     },
-  },
+  } as RegistryItem,
   {
     name: "skeleton",
     type: "registry:ui",
