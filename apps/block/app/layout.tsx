@@ -11,7 +11,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen flex flex-col">
+        <div className="flex min-h-screen flex-col">
           <header className="border-b py-4">
             <div className="container mx-auto px-4">
               <h1 className="text-xl font-bold">Blocks</h1>
