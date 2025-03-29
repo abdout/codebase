@@ -431,10 +431,10 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 function NavActions({
   actions,
 }: {
-  actions: {
+  actions: Array<Array<{
     label: string
     icon: LucideIcon
-  }[][]
+  }>>
 }) {
   const [isOpen, setIsOpen] = React.useState(false)
 
