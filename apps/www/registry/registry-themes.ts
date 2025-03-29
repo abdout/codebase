@@ -1,4 +1,4 @@
-import { type Registry } from "shadcn/registry"
+import { type Registry, type RegistryItem } from "shadcn/registry"
 
 export const themes: Registry["items"] = [
   {
@@ -58,7 +58,7 @@ export const themes: Registry["items"] = [
         "chart-5": "35 43% 53%",
       },
     },
-  },
+  } as RegistryItem,
   {
     name: "theme-midnight",
     type: "registry:theme",
@@ -116,7 +116,7 @@ export const themes: Registry["items"] = [
         "chart-5": "240 2% 26%",
       },
     },
-  },
+  } as RegistryItem,
   {
     name: "theme-emerald",
     type: "registry:theme",
@@ -174,5 +174,5 @@ export const themes: Registry["items"] = [
         "chart-5": "141 40% 9%",
       },
     },
-  },
+  } as RegistryItem,
 ]
