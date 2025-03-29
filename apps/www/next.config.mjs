@@ -7,7 +7,7 @@ const nextConfig = {
       "/templates/*": ["./registry/**/*"],
     },
   },
-  output: 'standalone',
+  output: 'export',
   reactStrictMode: true,
   swcMinify: true,
   images: {
@@ -21,6 +21,7 @@ const nextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
+    unoptimized: true,
   },
   async rewrites() {
     return [

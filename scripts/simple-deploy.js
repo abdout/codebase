@@ -55,43 +55,43 @@ try {
 // Copy built Next.js files
 console.log('Copying build output...');
 
-// Copy www app (main app)
+// Copy www app (main app) - using static export instead of standalone
 try {
-  // Copy standalone server
-  const wwwStandalonePath = path.join(rootDir, 'apps/www/.next/standalone');
-  if (fs.existsSync(wwwStandalonePath)) {
-    execSync(`cp -r ${wwwStandalonePath}/* ${outputDir}/`, { stdio: 'inherit' });
-    console.log('✅ Copied www standalone output');
+  const wwwOutPath = path.join(rootDir, 'apps/www/out');
+  if (fs.existsSync(wwwOutPath)) {
+    // Use xcopy for Windows compatibility
+    execSync(`xcopy "${wwwOutPath}\\*" "${staticDir}\\www\\" /E /I /H /Y`, { stdio: 'inherit' });
+    console.log('✅ Copied www static output');
   } else {
-    throw new Error('www standalone output not found');
+    throw new Error('www static output not found');
   }
-
-  // Copy static files
-  execSync(`mkdir -p ${staticDir}/www/_next`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/www/.next/static/* ${staticDir}/www/_next/`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/www/public/* ${staticDir}/www/`, { stdio: 'inherit' });
-  console.log('✅ Copied www static files');
 } catch (error) {
   console.error('❌ Error copying www app:', error.message);
   createFallbackHtml();
 }
 
-// Copy block app
+// Copy block app - using static export
 try {
-  execSync(`mkdir -p ${staticDir}/block/_next`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/block/.next/static/* ${staticDir}/block/_next/`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/block/public/* ${staticDir}/block/`, { stdio: 'inherit' });
-  console.log('✅ Copied block app static files');
+  const blockOutPath = path.join(rootDir, 'apps/block/out');
+  if (fs.existsSync(blockOutPath)) {
+    execSync(`xcopy "${blockOutPath}\\*" "${staticDir}\\block\\" /E /I /H /Y`, { stdio: 'inherit' });
+    console.log('✅ Copied block static output');
+  } else {
+    throw new Error('block static output not found');
+  }
 } catch (error) {
   console.error('❌ Error copying block app:', error.message);
 }
 
-// Copy micro app
+// Copy micro app - using static export
 try {
-  execSync(`mkdir -p ${staticDir}/micro/_next`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/micro/.next/static/* ${staticDir}/micro/_next/`, { stdio: 'inherit' });
-  execSync(`cp -r ${rootDir}/apps/micro/public/* ${staticDir}/micro/`, { stdio: 'inherit' });
-  console.log('✅ Copied micro app static files');
+  const microOutPath = path.join(rootDir, 'apps/micro/out');
+  if (fs.existsSync(microOutPath)) {
+    execSync(`xcopy "${microOutPath}\\*" "${staticDir}\\micro\\" /E /I /H /Y`, { stdio: 'inherit' });
+    console.log('✅ Copied micro static output');
+  } else {
+    throw new Error('micro static output not found');
+  }
 } catch (error) {
   console.error('❌ Error copying micro app:', error.message);
 }
@@ -102,35 +102,61 @@ fs.writeFileSync(
   JSON.stringify({
     version: 3,
     routes: [
-      // Static asset routes for each app
-      { src: "^/block/_next/(.*)", dest: "/static/block/_next/$1" },
-      { src: "^/micro/_next/(.*)", dest: "/static/micro/_next/$1" },
-      { src: "^/_next/(.*)", dest: "/static/www/_next/$1" },
-      
       // Handle static files in public directories
       { handle: "filesystem" },
       
       // App-specific routes
-      { src: "/block/(.*)", dest: "/block/$1" },
-      { src: "/micro/(.*)", dest: "/micro/$1" },
+      { src: "/block/(.*)", dest: "/static/block/$1" },
+      { src: "/micro/(.*)", dest: "/static/micro/$1" },
       
       // Handle all other routes with the www app
-      { src: "/(.*)", dest: "/" }
+      { src: "/(.*)", dest: "/static/www/$1" }
     ]
   }, null, 2)
 );
 console.log('✅ Created config.json');
 
-// Create serverless function for the index.func
+// Create a simple static file server function
 const indexFuncDir = path.join(functionsDir, 'index.func');
 if (!fs.existsSync(indexFuncDir)) {
   fs.mkdirSync(indexFuncDir, { recursive: true });
 }
 
+// Create a simple handler for 404 pages
+fs.writeFileSync(
+  path.join(indexFuncDir, 'server.js'),
+  `
+// Simple handler for 404 pages
+module.exports = (req, res) => {
+  // This should only be reached if a static file wasn't found
+  res.statusCode = 404;
+  res.setHeader('Content-Type', 'text/html');
+  res.end(\`<!DOCTYPE html>
+<html>
+<head>
+  <title>Page Not Found</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    h1 { color: #0070f3; }
+    a { color: #0070f3; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>404 - Page Not Found</h1>
+  <p>The page you're looking for doesn't exist.</p>
+  <p><a href="/">Go back home</a></p>
+</body>
+</html>\`);
+};
+`
+);
+
 fs.writeFileSync(
   path.join(indexFuncDir, '.vc-config.json'),
   JSON.stringify({
-    runtime: "nodejs22.x",
+    runtime: "nodejs18.x", // Using Node.js 18 for wider compatibility 
     handler: "server.js",
     launcherType: "Nodejs"
   }, null, 2)
