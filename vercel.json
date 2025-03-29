@@ -1,9 +1,6 @@
 {
   "buildCommand": "pnpm deploy",
   "installCommand": "pnpm install",
-  "outputDirectory": ".vercel/output",
-  "rewrites": [
-    { "source": "/block/:path*", "destination": "/block/:path*" },
-    { "source": "/micro/:path*", "destination": "/micro/:path*" }
-  ]
+  "framework": "nextjs",
+  "outputDirectory": ".vercel/output"
 } 
