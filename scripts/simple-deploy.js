@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// Simple deployment script for Vercel
+// Deployment script for Vercel that builds Next.js apps
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-console.log('Starting simple deployment script');
+console.log('Starting deployment script');
 
 // Get current directory when using ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -26,29 +26,125 @@ const functionsDir = path.join(outputDir, 'functions');
   }
 });
 
+// Create static directories for each app
+['www', 'block', 'micro'].forEach(appName => {
+  const appStaticDir = path.join(staticDir, appName);
+  if (!fs.existsSync(appStaticDir)) {
+    fs.mkdirSync(appStaticDir, { recursive: true });
+    console.log(`Created static directory for ${appName}: ${appStaticDir}`);
+  }
+});
+
+// Build Next.js apps
+console.log('Building Next.js apps...');
+try {
+  // Build the apps
+  execSync('pnpm --filter=www build', { stdio: 'inherit', cwd: rootDir });
+  console.log('✅ Built www app');
+  execSync('pnpm --filter=block build', { stdio: 'inherit', cwd: rootDir });
+  console.log('✅ Built block app');
+  execSync('pnpm --filter=micro build', { stdio: 'inherit', cwd: rootDir });
+  console.log('✅ Built micro app');
+} catch (error) {
+  console.error('❌ Error building apps:', error.message);
+  // Use fallback static HTML files if builds fail
+  createFallbackHtml();
+  process.exit(1);
+}
+
+// Copy built Next.js files
+console.log('Copying build output...');
+
+// Copy www app (main app)
+try {
+  // Copy standalone server
+  const wwwStandalonePath = path.join(rootDir, 'apps/www/.next/standalone');
+  if (fs.existsSync(wwwStandalonePath)) {
+    execSync(`cp -r ${wwwStandalonePath}/* ${outputDir}/`, { stdio: 'inherit' });
+    console.log('✅ Copied www standalone output');
+  } else {
+    throw new Error('www standalone output not found');
+  }
+
+  // Copy static files
+  execSync(`mkdir -p ${staticDir}/www/_next`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/www/.next/static/* ${staticDir}/www/_next/`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/www/public/* ${staticDir}/www/`, { stdio: 'inherit' });
+  console.log('✅ Copied www static files');
+} catch (error) {
+  console.error('❌ Error copying www app:', error.message);
+  createFallbackHtml();
+}
+
+// Copy block app
+try {
+  execSync(`mkdir -p ${staticDir}/block/_next`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/block/.next/static/* ${staticDir}/block/_next/`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/block/public/* ${staticDir}/block/`, { stdio: 'inherit' });
+  console.log('✅ Copied block app static files');
+} catch (error) {
+  console.error('❌ Error copying block app:', error.message);
+}
+
+// Copy micro app
+try {
+  execSync(`mkdir -p ${staticDir}/micro/_next`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/micro/.next/static/* ${staticDir}/micro/_next/`, { stdio: 'inherit' });
+  execSync(`cp -r ${rootDir}/apps/micro/public/* ${staticDir}/micro/`, { stdio: 'inherit' });
+  console.log('✅ Copied micro app static files');
+} catch (error) {
+  console.error('❌ Error copying micro app:', error.message);
+}
+
 // Create config.json
 fs.writeFileSync(
   path.join(outputDir, 'config.json'),
   JSON.stringify({
     version: 3,
     routes: [
-      // Static routes for each app
-      { src: '^/block/?$', dest: '/block.html' },
-      { src: '^/micro/?$', dest: '/micro.html' },
-      // Handle static files
-      { handle: 'filesystem' },
-      // Fallback - root route
-      { src: '^/?$', dest: '/index.html' },
-      // Any other routes will use the root file too
-      { src: '/(.*)', dest: '/index.html' }
+      // Static asset routes for each app
+      { src: "^/block/_next/(.*)", dest: "/static/block/_next/$1" },
+      { src: "^/micro/_next/(.*)", dest: "/static/micro/_next/$1" },
+      { src: "^/_next/(.*)", dest: "/static/www/_next/$1" },
+      
+      // Handle static files in public directories
+      { handle: "filesystem" },
+      
+      // App-specific routes
+      { src: "/block/(.*)", dest: "/block/$1" },
+      { src: "/micro/(.*)", dest: "/micro/$1" },
+      
+      // Handle all other routes with the www app
+      { src: "/(.*)", dest: "/" }
     ]
   }, null, 2)
 );
-console.log('Created config.json');
+console.log('✅ Created config.json');
 
-// Create static HTML files
-const htmlFiles = {
-  'index.html': `<!DOCTYPE html>
+// Create serverless function for the index.func
+const indexFuncDir = path.join(functionsDir, 'index.func');
+if (!fs.existsSync(indexFuncDir)) {
+  fs.mkdirSync(indexFuncDir, { recursive: true });
+}
+
+fs.writeFileSync(
+  path.join(indexFuncDir, '.vc-config.json'),
+  JSON.stringify({
+    runtime: "nodejs18.x",
+    handler: "server.js",
+    launcherType: "Nodejs"
+  }, null, 2)
+);
+console.log('✅ Created function config');
+
+console.log('✅ Deployment setup completed successfully');
+
+// Fallback HTML creation function
+function createFallbackHtml() {
+  console.log('Creating fallback HTML files...');
+  
+  const htmlFiles = {
+    'index.html': `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -63,8 +159,8 @@ const htmlFiles = {
   </style>
 </head>
 <body>
-  <h1>Main App</h1>
-  <p>Welcome to the main application deployed on Vercel!</p>
+  <h1>Main App (Fallback)</h1>
+  <p>Welcome to the main application! (This is a fallback page - build failed)</p>
   
   <nav>
     <strong>Navigate to:</strong>
@@ -75,13 +171,13 @@ const htmlFiles = {
 
   <div>
     <h2>About this deployment</h2>
-    <p>This is a static deployment created as a proof of concept for the monorepo structure.</p>
+    <p>This is a fallback deployment created when the actual build failed.</p>
     <p>Deployment time: ${new Date().toISOString()}</p>
   </div>
 </body>
 </html>`,
 
-  'block.html': `<!DOCTYPE html>
+    'block.html': `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -96,8 +192,8 @@ const htmlFiles = {
   </style>
 </head>
 <body>
-  <h1>Block App</h1>
-  <p>Welcome to the Block application!</p>
+  <h1>Block App (Fallback)</h1>
+  <p>Welcome to the Block application! (This is a fallback page - build failed)</p>
   
   <nav>
     <strong>Navigate to:</strong>
@@ -108,13 +204,13 @@ const htmlFiles = {
 
   <div>
     <h2>About Block App</h2>
-    <p>This is the Block app static content, deployed from the monorepo.</p>
+    <p>This is a fallback for the Block app when the build fails.</p>
     <p>Deployment time: ${new Date().toISOString()}</p>
   </div>
 </body>
 </html>`,
 
-  'micro.html': `<!DOCTYPE html>
+    'micro.html': `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -129,8 +225,8 @@ const htmlFiles = {
   </style>
 </head>
 <body>
-  <h1>Micro App</h1>
-  <p>Welcome to the Micro application!</p>
+  <h1>Micro App (Fallback)</h1>
+  <p>Welcome to the Micro application! (This is a fallback page - build failed)</p>
   
   <nav>
     <strong>Navigate to:</strong>
@@ -141,52 +237,16 @@ const htmlFiles = {
 
   <div>
     <h2>About Micro App</h2>
-    <p>This is the Micro app static content, deployed from the monorepo.</p>
+    <p>This is a fallback for the Micro app when the build fails.</p>
     <p>Deployment time: ${new Date().toISOString()}</p>
   </div>
 </body>
 </html>`
-};
+  };
 
-// Write static HTML files
-Object.entries(htmlFiles).forEach(([filename, content]) => {
-  fs.writeFileSync(path.join(staticDir, filename), content);
-  console.log(`Created static file: ${filename}`);
-});
-
-// Optionally, create a server.js file and functions directory for serverless deployment
-// Uncomment this section when ready to deploy server-rendered content
-/*
-// Create a minimal server.js file for future use
-const serverJsContent = `
-// This is a placeholder server file for future server-rendered content
-export default function handler(request, response) {
-  return new Response("Server-rendered content will be available in a future update", {
-    status: 200,
-    headers: {
-      "Content-Type": "text/plain"
-    }
+  // Write static HTML files
+  Object.entries(htmlFiles).forEach(([filename, content]) => {
+    fs.writeFileSync(path.join(staticDir, filename), content);
+    console.log(`Created fallback static file: ${filename}`);
   });
-}
-`;
-
-const funcDir = path.join(functionsDir, 'index.func');
-if (!fs.existsSync(funcDir)) {
-  fs.mkdirSync(funcDir, { recursive: true });
-  console.log('Created function directory');
-}
-
-fs.writeFileSync(path.join(funcDir, 'index.js'), serverJsContent);
-console.log('Created server function file');
-
-fs.writeFileSync(
-  path.join(funcDir, '.vc-config.json'),
-  JSON.stringify({
-    runtime: "edge",
-    entrypoint: "index.js"
-  }, null, 2)
-);
-console.log('Created function config');
-*/
-
-console.log('Deployment setup completed successfully'); 
+} 
