@@ -55,16 +55,24 @@ try {
 // Copy built Next.js files
 console.log('Copying build output...');
 
-// Copy www app (main app) - using static export instead of standalone
+// Copy www app (main app) - using standalone output
 try {
-  const wwwOutPath = path.join(rootDir, 'apps/www/out');
-  if (fs.existsSync(wwwOutPath)) {
-    // Use xcopy for Windows compatibility
-    execSync(`xcopy "${wwwOutPath}\\*" "${staticDir}\\www\\" /E /I /H /Y`, { stdio: 'inherit' });
-    console.log('✅ Copied www static output');
+  // Copy standalone server
+  const wwwStandalonePath = path.join(rootDir, 'apps/www/.next/standalone');
+  if (fs.existsSync(wwwStandalonePath)) {
+    execSync(`xcopy "${wwwStandalonePath}\\*" "${outputDir}\\" /E /I /H /Y`, { stdio: 'inherit' });
+    console.log('✅ Copied www standalone output');
   } else {
-    throw new Error('www static output not found');
+    throw new Error('www standalone output not found');
   }
+
+  // Copy static files
+  if (!fs.existsSync(path.join(staticDir, 'www', '_next'))) {
+    fs.mkdirSync(path.join(staticDir, 'www', '_next'), { recursive: true });
+  }
+  execSync(`xcopy "${rootDir}\\apps\\www\\.next\\static\\*" "${staticDir}\\www\\_next\\" /E /I /H /Y`, { stdio: 'inherit' });
+  execSync(`xcopy "${rootDir}\\apps\\www\\public\\*" "${staticDir}\\www\\" /E /I /H /Y`, { stdio: 'inherit' });
+  console.log('✅ Copied www static files');
 } catch (error) {
   console.error('❌ Error copying www app:', error.message);
   createFallbackHtml();
@@ -102,56 +110,28 @@ fs.writeFileSync(
   JSON.stringify({
     version: 3,
     routes: [
+      // Static asset routes for www app
+      { src: "^/_next/(.*)", dest: "/static/www/_next/$1" },
+      
       // Handle static files in public directories
       { handle: "filesystem" },
       
-      // App-specific routes
+      // App-specific routes for block and micro
       { src: "/block/(.*)", dest: "/static/block/$1" },
       { src: "/micro/(.*)", dest: "/static/micro/$1" },
       
-      // Handle all other routes with the www app
-      { src: "/(.*)", dest: "/static/www/$1" }
+      // Handle all other routes with the www app server
+      { src: "/(.*)", dest: "/" }
     ]
   }, null, 2)
 );
 console.log('✅ Created config.json');
 
-// Create a simple static file server function
+// Create a server function for Vercel
 const indexFuncDir = path.join(functionsDir, 'index.func');
 if (!fs.existsSync(indexFuncDir)) {
   fs.mkdirSync(indexFuncDir, { recursive: true });
 }
-
-// Create a simple handler for 404 pages
-fs.writeFileSync(
-  path.join(indexFuncDir, 'server.js'),
-  `
-// Simple handler for 404 pages
-module.exports = (req, res) => {
-  // This should only be reached if a static file wasn't found
-  res.statusCode = 404;
-  res.setHeader('Content-Type', 'text/html');
-  res.end(\`<!DOCTYPE html>
-<html>
-<head>
-  <title>Page Not Found</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
-    h1 { color: #0070f3; }
-    a { color: #0070f3; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>404 - Page Not Found</h1>
-  <p>The page you're looking for doesn't exist.</p>
-  <p><a href="/">Go back home</a></p>
-</body>
-</html>\`);
-};
-`
-);
 
 fs.writeFileSync(
   path.join(indexFuncDir, '.vc-config.json'),

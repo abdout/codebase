@@ -7,7 +7,7 @@ const nextConfig = {
       "/templates/*": ["./registry/**/*"],
     },
   },
-  output: 'export',
+  output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
   images: {
