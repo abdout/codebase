@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm turbo build",
+  "buildCommand": "pnpm turbo build --filter=www... --filter=block... --filter=micro...",
   "installCommand": "pnpm install",
   "framework": "nextjs"
 } 

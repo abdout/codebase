@@ -21,6 +21,26 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/block',
+        destination: '/block/index.html',
+      },
+      {
+        source: '/block/:path*',
+        destination: '/block/:path*',
+      },
+      {
+        source: '/micro',
+        destination: '/micro/index.html',
+      },
+      {
+        source: '/micro/:path*',
+        destination: '/micro/:path*',
+      }
+    ]
+  },
   redirects() {
     return [
       {
