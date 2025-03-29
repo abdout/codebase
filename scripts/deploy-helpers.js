@@ -159,7 +159,7 @@ if (!fs.existsSync(indexFuncDir)) {
 fs.writeFileSync(
   path.join(indexFuncDir, '.vc-config.json'),
   JSON.stringify({
-    runtime: "nodejs18.x",
+    runtime: "nodejs22.x",
     handler: "server.js",
     launcherType: "Nodejs",
     shouldAddHelpers: true,

@@ -4,6 +4,9 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "author": {
     "name": "shadcn",
     "url": "https://twitter.com/shadcn"
