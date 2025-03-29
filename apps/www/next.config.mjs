@@ -7,6 +7,7 @@ const nextConfig = {
       "/templates/*": ["./registry/**/*"],
     },
   },
+  output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
   images: {

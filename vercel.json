@@ -1,5 +1,6 @@
 {
-  "buildCommand": "pnpm turbo build --filter=www... --filter=block --filter=micro",
+  "buildCommand": "pnpm deploy",
   "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "framework": null,
+  "outputDirectory": ".vercel/output"
 } 

@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/block/:path*", "destination": "/block/:path*" },
+    { "source": "/micro/:path*", "destination": "/micro/:path*" }
+  ]
+} 
