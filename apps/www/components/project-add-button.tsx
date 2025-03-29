@@ -16,7 +16,7 @@ export function ProjectAddButton({
   className,
   ...props
 }: React.ComponentProps<typeof Button> & { name: string }) {
-  const { addBlock, isAdded } = useProject()
+  const { addTemplate, isAdded } = useProject()
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -25,7 +25,7 @@ export function ProjectAddButton({
           size="sm"
           className={cn("rounded-sm", className)}
           onClick={() => {
-            addBlock(name)
+            addTemplate(name)
           }}
           {...props}
         >
