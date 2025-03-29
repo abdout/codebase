@@ -18,6 +18,10 @@
       ],
       "outputs": ["dist/**", ".next/**"]
     },
+    "deploy-apps": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
     "preview": {
       "env": ["NEXT_PUBLIC_APP_URL"],
       "outputs": ["dist/**", ".next/**"]
