@@ -13,9 +13,9 @@ import {
 } from "@/components/page-header"
 import { Button } from "@/registry/new-york/ui/button"
 
-const title = "Build your component library"
+const title = "Build your code library"
 const description =
-  "A set of beautifully-designed, accessible components and a code distribution platform. Works with your favorite frameworks. Open Source. Open Code."
+  "A set of beautifully-designed, blazing-fast code. Works with your favorite frameworks. Open Source. Open Code."
 
 export const metadata: Metadata = {
   title,
