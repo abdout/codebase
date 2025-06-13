@@ -54,10 +54,10 @@ export default function templatesLayout({
         <PageHeaderDescription>{description}</PageHeaderDescription>
         <PageActions>
           <Button asChild size="sm">
-            <a href="#templates">Browse Templates</a>
+            <a href="#blocks">Browse Blocks</a>
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/docs/templates">Add a template</Link>
+            <Link href="/docs/blocks">Add a block</Link>
           </Button>
         </PageActions>
       </PageHeader>
